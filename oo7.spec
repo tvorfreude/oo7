@@ -62,6 +62,8 @@ cd ..
 %{_datadir}/applications/oo7-portal.desktop
 %{_datadir}/xdg-desktop-portal/portals/oo7-portal.portal
 %{_datadir}/dbus-1/services/org.freedesktop.impl.portal.desktop.oo7.service
+%{_userunitdir}/oo7-daemon.service
+%{_userunitdir}/oo7-daemon.socket
 %{_userunitdir}/oo7-portal.service
 %{_userunitdir}/dbus-org.freedesktop.impl.portal.desktop.oo7.service
 
