@@ -13,6 +13,7 @@ BuildRequires:  meson
 BuildRequires:  ninja-build
 BuildRequires:  pkgconfig(gio-2.0)
 BuildRequires:  pkgconfig(systemd)
+BuildRequires:  pam-devel
 
 %description
 James Bond went on a new mission, and this time as a Secret Service provider.
