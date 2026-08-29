@@ -43,16 +43,16 @@ cd portal
 cd ..
 
 %install
-# 1. Standard build root directory initialisation
-install -d %{buildroot}%{_bindir}
-install -d %{buildroot}%{_userunitdir}
+# 1. Cleanly establish the absolute destination layout
+install -d %{buildroot}/usr/bin
+install -d %{buildroot}/usr/lib/systemd/user
 
-# 2. Extract the core binaries compiled via Cargo
-install -p -m 0755 target/release/oo7-daemon %{buildroot}%{_bindir}/oo7-daemon
-install -p -m 0755 target/release/git-credential-oo7 %{buildroot}%{_bindir}/git-credential-oo7
+# 2. Extract and anchor the core binaries compiled via Cargo
+install -p -m 0755 target/release/oo7-daemon %{buildroot}/usr/bin/oo7-daemon
+install -p -m 0755 target/release/git-credential-oo7 %{buildroot}/usr/bin/git-credential-oo7
 
-# 3. Dynamically generate the missing systemd user service file on the fly
-cat << 'EOF' > %{buildroot}%{_userunitdir}/oo7-daemon.service
+# 3. Explicitly construct the missing systemd configurations at the proper root layer
+cat << 'EOF' > %{buildroot}/usr/lib/systemd/user/oo7-daemon.service
 [Unit]
 Description=Secret Service Daemon
 Documentation=man:oo7-daemon(1)
@@ -64,8 +64,7 @@ ExecStart=/usr/bin/oo7-daemon --login
 Restart=on-failure
 EOF
 
-# 4. Dynamically generate the missing systemd user socket file on the fly
-cat << 'EOF' > %{buildroot}%{_userunitdir}/oo7-daemon.socket
+cat << 'EOF' > %{buildroot}/usr/lib/systemd/user/oo7-daemon.socket
 [Unit]
 Description=Secret Service Daemon Socket
 
@@ -76,10 +75,11 @@ ListenStream=%t/oo7-pam.sock
 WantedBy=sockets.target
 EOF
 
-# 5. Trigger the standard Meson portal asset deployment pipeline
+# 4. Step down into the portal subdirectory and invoke Meson last
 cd portal
 %meson_install
 cd ..
+
 
 
 %files
