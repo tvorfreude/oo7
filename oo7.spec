@@ -1,5 +1,5 @@
 Name:           oo7
-Version:        0.6.0
+Version:        main
 Release:        1%{?dist}
 Summary:        Secret Service provider and alternative DBus secret portal backend
 
@@ -43,20 +43,26 @@ cd portal
 cd ..
 
 %install
-# Install core binaries compiled via Cargo
+# 1. Create the system binary directory
 install -d %{buildroot}%{_bindir}
+
+# 2. Install the compiled binaries manually from the target directory
 install -p -m 0755 target/release/oo7-daemon %{buildroot}%{_bindir}/oo7-daemon
 install -p -m 0755 target/release/git-credential-oo7 %{buildroot}%{_bindir}/git-credential-oo7
 
-# Install the systemd user service and socket targets from the daemon subfolder
-install -d %{buildroot}%{_userunitdir}
-install -p -m 0644 daemon/data/oo7-daemon.service %{buildroot}%{_userunitdir}/oo7-daemon.service
-install -p -m 0644 daemon/data/oo7-daemon.socket %{buildroot}%{_userunitdir}/oo7-daemon.socket
-
-# Install the portal configurations via Meson integration
+# 3. Use Meson to automatically discover, build, and deploy all configuration files
 cd portal
 %meson_install
 cd ..
+
+# 4. Check if Meson didn't catch the service configuration files. 
+# If it skipped them, look for them dynamically in the project root:
+if [ ! -f %{buildroot}%{_userunitdir}/oo7-daemon.service ]; then
+    install -d %{buildroot}%{_userunitdir}
+    find . -name "oo7-daemon.service" -exec cp {} %{buildroot}%{_userunitdir}/ \;
+    find . -name "oo7-daemon.socket" -exec cp {} %{buildroot}%{_userunitdir}/ \;
+fi
+
 
 %files
 %license LICENSE
