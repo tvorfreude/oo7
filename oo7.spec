@@ -43,7 +43,7 @@ cd portal
 cd ..
 
 %install
-# 1. Standard build root initialization
+# 1. Standard build root directory initialisation
 install -d %{buildroot}%{_bindir}
 install -d %{buildroot}%{_userunitdir}
 
@@ -51,25 +51,35 @@ install -d %{buildroot}%{_userunitdir}
 install -p -m 0755 target/release/oo7-daemon %{buildroot}%{_bindir}/oo7-daemon
 install -p -m 0755 target/release/git-credential-oo7 %{buildroot}%{_bindir}/git-credential-oo7
 
-# 3. Handle the systemd files explicitly by climbing up to the root project workspace
-(
-  cd ..
-  find . -name "oo7-daemon.service" -exec cp -pv {} %{buildroot}%{_userunitdir}/ \;
-  find . -name "oo7-daemon.socket" -exec cp -pv {} %{buildroot}%{_userunitdir}/ \;
-)
+# 3. Dynamically generate the missing systemd user service file on the fly
+cat << 'EOF' > %{buildroot}%{_userunitdir}/oo7-daemon.service
+[Unit]
+Description=Secret Service Daemon
+Documentation=man:oo7-daemon(1)
 
-# 4. Trigger the Meson portal asset deployment pipeline
+[Service]
+Type=dbus
+BusName=org.freedesktop.secrets
+ExecStart=/usr/bin/oo7-daemon --login
+Restart=on-failure
+EOF
+
+# 4. Dynamically generate the missing systemd user socket file on the fly
+cat << 'EOF' > %{buildroot}%{_userunitdir}/oo7-daemon.socket
+[Unit]
+Description=Secret Service Daemon Socket
+
+[Socket]
+ListenStream=%t/oo7-pam.sock
+
+[Install]
+WantedBy=sockets.target
+EOF
+
+# 5. Trigger the standard Meson portal asset deployment pipeline
 cd portal
 %meson_install
 cd ..
-
-# 4. Check if Meson didn't catch the service configuration files. 
-# If it skipped them, look for them dynamically in the project root:
-if [ ! -f %{buildroot}%{_userunitdir}/oo7-daemon.service ]; then
-    install -d %{buildroot}%{_userunitdir}
-    find . -name "oo7-daemon.service" -exec cp {} %{buildroot}%{_userunitdir}/ \;
-    find . -name "oo7-daemon.socket" -exec cp {} %{buildroot}%{_userunitdir}/ \;
-fi
 
 
 %files
