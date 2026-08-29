@@ -43,14 +43,22 @@ cd portal
 cd ..
 
 %install
-# 1. Create the system binary directory
+# 1. Standard build root initialization
 install -d %{buildroot}%{_bindir}
+install -d %{buildroot}%{_userunitdir}
 
-# 2. Install the compiled binaries manually from the target directory
+# 2. Extract the core binaries compiled via Cargo
 install -p -m 0755 target/release/oo7-daemon %{buildroot}%{_bindir}/oo7-daemon
 install -p -m 0755 target/release/git-credential-oo7 %{buildroot}%{_bindir}/git-credential-oo7
 
-# 3. Use Meson to automatically discover, build, and deploy all configuration files
+# 3. Handle the systemd files explicitly by climbing up to the root project workspace
+(
+  cd ..
+  find . -name "oo7-daemon.service" -exec cp -pv {} %{buildroot}%{_userunitdir}/ \;
+  find . -name "oo7-daemon.socket" -exec cp -pv {} %{buildroot}%{_userunitdir}/ \;
+)
+
+# 4. Trigger the Meson portal asset deployment pipeline
 cd portal
 %meson_install
 cd ..
