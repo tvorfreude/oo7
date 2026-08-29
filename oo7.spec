@@ -53,14 +53,17 @@ cd portal
 %meson_install
 cd ..
 
+
 %files
 %license LICENSE
 %doc README.md
 %{_bindir}/oo7-daemon
-# Add portal and D-Bus system paths outputted by the portal meson layer:
 %{_libexecdir}/oo7-portal
-%{_datadir}/dbus-1/services/org.freedesktop.impl.portal.Secret.service
-%{_datadir}/xdg-desktop-portal/portals/oo7.portal
+%{_datadir}/applications/oo7-portal.desktop
+%{_datadir}/xdg-desktop-portal/portals/oo7-portal.portal
+%{_datadir}/dbus-1/services/org.freedesktop.impl.portal.desktop.oo7.service
+%{_userunitdir}/oo7-portal.service
+%{_userunitdir}/dbus-org.freedesktop.impl.portal.desktop.oo7.service
 
 %files -n git-credential-oo7
 %{_bindir}/git-credential-oo7
