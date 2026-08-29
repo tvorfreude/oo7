@@ -41,16 +41,17 @@ cd portal
 %meson
 %meson_build
 cd ..
+
 %install
 # Install core binaries compiled via Cargo
 install -d %{buildroot}%{_bindir}
 install -p -m 0755 target/release/oo7-daemon %{buildroot}%{_bindir}/oo7-daemon
 install -p -m 0755 target/release/git-credential-oo7 %{buildroot}%{_bindir}/git-credential-oo7
 
-# Install the systemd user service and socket targets provided in the upstream server subfolder
+# Install the systemd user service and socket targets from the daemon subfolder
 install -d %{buildroot}%{_userunitdir}
-install -p -m 0644 server/data/oo7-daemon.service %{buildroot}%{_userunitdir}/oo7-daemon.service
-install -p -m 0644 server/data/oo7-daemon.socket %{buildroot}%{_userunitdir}/oo7-daemon.socket
+install -p -m 0644 daemon/data/oo7-daemon.service %{buildroot}%{_userunitdir}/oo7-daemon.service
+install -p -m 0644 daemon/data/oo7-daemon.socket %{buildroot}%{_userunitdir}/oo7-daemon.socket
 
 # Install the portal configurations via Meson integration
 cd portal
